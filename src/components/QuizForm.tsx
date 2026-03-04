@@ -13,6 +13,11 @@ interface QuestionForm {
 }
 
 const QuizForm: React.FC = () => {
+  const normalizeQuestion = (q: any): Question => ({
+    ...q,
+    Author: q?.Author || q?.author || "",
+  });
+
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEdit = !!id;
@@ -45,7 +50,9 @@ const QuizForm: React.FC = () => {
         title: response.data.title,
         description: response.data.description,
       });
-      setQuestions(response.data.questions || []);
+      setQuestions(
+        (response.data.questions || []).map((q: any) => normalizeQuestion(q)),
+      );
     } catch (err) {
       toast.error("Failed to fetch quiz");
     }
@@ -86,7 +93,10 @@ const QuizForm: React.FC = () => {
     if (!isEdit || !id) {
       setQuestions([
         ...questions,
-        { ...newQuestion, correctAnswerIndex: normalizedIndex } as any,
+        normalizeQuestion({
+          ...newQuestion,
+          correctAnswerIndex: normalizedIndex,
+        }),
       ]);
       setNewQuestion({
         text: "",
@@ -105,7 +115,7 @@ const QuizForm: React.FC = () => {
         correctAnswerIndex: normalizedIndex,
       });
       const createdQuestion = res.data.questionInfo || res.data;
-      setQuestions([...questions, createdQuestion]);
+      setQuestions([...questions, normalizeQuestion(createdQuestion)]);
       setNewQuestion({
         text: "",
         Author: "",
@@ -152,19 +162,22 @@ const QuizForm: React.FC = () => {
       // Backend expects question objects for insertMany; only send ones chưa có _id
       const newQuestionPayload = questions
         .filter((q) => !q._id)
-        .map((q) => ({
-          text: q.text,
-          options: q.options,
-          keywords: q.keywords,
-          correctAnswerIndex:
-            typeof q.correctAnswerIndex === "number"
-              ? q.correctAnswerIndex
-              : Math.max(
-                  0,
-                  q.options.findIndex((opt) => opt === q.correctAnswerIndex),
-                ),
-          Author: typeof q.Author === "string" ? q.Author : q.Author?._id,
-        }));
+        .map((q) => {
+          const author = (q as any).Author || (q as any).author;
+          return {
+            text: q.text,
+            options: q.options,
+            keywords: q.keywords,
+            correctAnswerIndex:
+              typeof q.correctAnswerIndex === "number"
+                ? q.correctAnswerIndex
+                : Math.max(
+                    0,
+                    q.options.findIndex((opt) => opt === q.correctAnswerIndex),
+                  ),
+            Author: typeof author === "string" ? author : author?._id,
+          };
+        });
 
       if (isEdit && id) {
         await quizAPI.updateQuiz(id, quiz);
@@ -239,10 +252,11 @@ const QuizForm: React.FC = () => {
                   </button>
                 </div>
                 <p className="mb-1">
-                  Author:{" "}
-                  {typeof q.Author === "string"
-                    ? q.Author || "Unknown"
-                    : q.Author?.username || "Unknown"}
+                  {(() => {
+                    const author = (q as any).Author || (q as any).author;
+                    if (typeof author === "string") return author || "Unknown";
+                    return author?.username || "Unknown";
+                  })()}
                 </p>
                 <p className="mb-1">
                   Keywords: {q.keywords?.filter(Boolean).join(", ") || "—"}
