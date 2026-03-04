@@ -9,7 +9,7 @@ interface QuestionForm {
   Author: string;
   keywords: string[];
   options: string[];
-  correctAnswerIndex: string;
+  correctAnswerIndex: number | "";
 }
 
 const QuizForm: React.FC = () => {
@@ -72,8 +72,22 @@ const QuizForm: React.FC = () => {
       toast.warn("Điền đầy đủ câu hỏi và lựa chọn");
       return;
     }
+    if (newQuestion.correctAnswerIndex === "") {
+      toast.warn("Chọn đáp án đúng");
+      return;
+    }
+
+    const normalizedIndex =
+      typeof newQuestion.correctAnswerIndex === "number"
+        ? newQuestion.correctAnswerIndex
+        : newQuestion.options.findIndex(
+            (opt) => opt === newQuestion.correctAnswerIndex,
+          );
     if (!isEdit || !id) {
-      setQuestions([...questions, { ...newQuestion } as any]);
+      setQuestions([
+        ...questions,
+        { ...newQuestion, correctAnswerIndex: normalizedIndex } as any,
+      ]);
       setNewQuestion({
         text: "",
         Author: "",
@@ -86,7 +100,10 @@ const QuizForm: React.FC = () => {
     }
 
     try {
-      const res = await quizAPI.addQuestionToQuiz(id, newQuestion);
+      const res = await quizAPI.addQuestionToQuiz(id, {
+        ...newQuestion,
+        correctAnswerIndex: normalizedIndex,
+      });
       const createdQuestion = res.data.questionInfo || res.data;
       setQuestions([...questions, createdQuestion]);
       setNewQuestion({
@@ -286,17 +303,23 @@ const QuizForm: React.FC = () => {
               <select
                 name="correctAnswer"
                 className="form-control"
-                value={newQuestion.correctAnswerIndex}
-                onChange={(e) =>
+                value={
+                  newQuestion.correctAnswerIndex === ""
+                    ? ""
+                    : String(newQuestion.correctAnswerIndex)
+                }
+                onChange={(e) => {
+                  const value =
+                    e.target.value === "" ? "" : Number(e.target.value);
                   setNewQuestion({
                     ...newQuestion,
-                    correctAnswerIndex: e.target.value,
-                  })
-                }
+                    correctAnswerIndex: value,
+                  });
+                }}
               >
                 <option value="">Select correct answer</option>
                 {newQuestion.options.map((opt, index) => (
-                  <option key={index} value={opt}>
+                  <option key={index} value={index}>
                     {opt || `Option ${index + 1}`}
                   </option>
                 ))}
