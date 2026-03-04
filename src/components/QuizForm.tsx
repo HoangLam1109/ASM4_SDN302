@@ -292,6 +292,7 @@ const QuizForm: React.FC = () => {
                 type="text"
                 className="form-control"
                 placeholder="react, redux, api"
+                value={newQuestion.keywords.join(", ")}
                 onChange={(e) =>
                   setNewQuestion({
                     ...newQuestion,
