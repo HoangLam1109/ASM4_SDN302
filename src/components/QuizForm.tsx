@@ -84,12 +84,11 @@ const QuizForm: React.FC = () => {
       return;
     }
 
-    const normalizedIndex =
-      typeof newQuestion.correctAnswerIndex === "number"
-        ? newQuestion.correctAnswerIndex
-        : newQuestion.options.findIndex(
-            (opt) => opt === newQuestion.correctAnswerIndex,
-          );
+    const normalizedIndex = Number(newQuestion.correctAnswerIndex);
+    if (Number.isNaN(normalizedIndex)) {
+      toast.error("Chỉ gửi index đáp án (số)");
+      return;
+    }
     if (!isEdit || !id) {
       setQuestions([
         ...questions,
@@ -164,17 +163,22 @@ const QuizForm: React.FC = () => {
         .filter((q) => !q._id)
         .map((q) => {
           const author = (q as any).Author || (q as any).author;
+          const idx =
+            typeof q.correctAnswerIndex === "number"
+              ? q.correctAnswerIndex
+              : Number(
+                  Math.max(
+                    0,
+                    q.options.findIndex(
+                      (opt) => opt === q.correctAnswerIndex,
+                    ),
+                  ),
+                );
           return {
             text: q.text,
             options: q.options,
             keywords: q.keywords,
-            correctAnswerIndex:
-              typeof q.correctAnswerIndex === "number"
-                ? q.correctAnswerIndex
-                : Math.max(
-                    0,
-                    q.options.findIndex((opt) => opt === q.correctAnswerIndex),
-                  ),
+            correctAnswerIndex: idx,
             Author: typeof author === "string" ? author : author?._id,
           };
         });
