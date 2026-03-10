@@ -53,7 +53,7 @@ npm install
 
 2. Tạo file `.env` trong thư mục root:
 ```
-REACT_APP_API_URL=http://localhost:3000/api
+REACT_APP_API_URL=http://localhost:3001/api
 ```
 
 3. Chạy ứng dụng:
@@ -61,7 +61,7 @@ REACT_APP_API_URL=http://localhost:3000/api
 npm start
 ```
 
-Ứng dụng sẽ chạy tại http://localhost:3000
+Ứng dụng sẽ chạy tại http://localhost:3001
 
 ## API Endpoints được sử dụng
 
@@ -92,7 +92,7 @@ npm start
 
 ## Cấu hình Backend
 
-Backend cần chạy tại `http://localhost:3000` và cung cấp các endpoints như trên.
+Backend cần chạy tại `http://localhost:3001` và cung cấp các endpoints như trên.
 
 Backend cần gửi response với format:
 ```typescript
