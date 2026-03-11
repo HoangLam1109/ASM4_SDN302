@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { setQuizzes, setLoading, setError } from '../store/slices/quizSlice';
 import { quizAPI } from '../services/api';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
@@ -49,6 +50,7 @@ const QuizList: React.FC = () => {
     setDeleteError('');
     try {
       await quizAPI.deleteQuiz(deleteTarget.id);
+      toast.success('Delete success');
       closeDeleteModal();
       fetchQuizzes();
     } catch (err: any) {
